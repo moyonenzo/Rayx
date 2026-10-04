@@ -1,8 +1,8 @@
 package fr.nzlz.rayx;
 
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
 import com.mojang.renderpearl.api.pipeline.ColorTargetState;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
-import com.mojang.renderpearl.api.pipeline.DepthStencilState;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.LayeringTransform;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
@@ -12,10 +12,30 @@ import java.util.Optional;
 
 public final class RayxRenderTypes {
 
+    public static final RenderType TARGET_BLOCK_GLOW;
     public static final RenderType TARGET_BLOCK_LINES;
 
     static {
-        RenderPipeline pipeline = RenderPipeline.builder(
+        RenderPipeline glowPipeline = RenderPipeline.builder(
+                        RenderPipelines.LINES_SNIPPET
+                )
+                .withLocation("pipeline/rayx_target_block_glow")
+                .withColorTargetState(
+                        new ColorTargetState(BlendFunction.TRANSLUCENT)
+                )
+                .withDepthStencilState(Optional.empty())
+                .build();
+
+        TARGET_BLOCK_GLOW = RenderType.create(
+                "rayx_target_block_glow",
+                RenderSetup.builder(glowPipeline)
+                        .setLayeringTransform(
+                                LayeringTransform.VIEW_OFFSET_Z_LAYERING
+                        )
+                        .createRenderSetup()
+        );
+
+        RenderPipeline linesPipeline = RenderPipeline.builder(
                         RenderPipelines.LINES_SNIPPET
                 )
                 .withLocation("pipeline/rayx_target_block_lines")
@@ -25,7 +45,7 @@ public final class RayxRenderTypes {
 
         TARGET_BLOCK_LINES = RenderType.create(
                 "rayx_target_block_lines",
-                RenderSetup.builder(pipeline)
+                RenderSetup.builder(linesPipeline)
                         .setLayeringTransform(
                                 LayeringTransform.VIEW_OFFSET_Z_LAYERING
                         )

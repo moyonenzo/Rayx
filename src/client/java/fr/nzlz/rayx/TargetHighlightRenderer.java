@@ -21,8 +21,13 @@ public final class TargetHighlightRenderer {
 
     private static final double OUTLINE_EPSILON = 0.002D;
 
-    private static final float LINE_ALPHA = 1.0F;
+    private static final float GLOW_OUTER_ALPHA = 0.10F;
+    private static final float GLOW_OUTER_WIDTH = 7.0F;
 
+    private static final float GLOW_INNER_ALPHA = 0.20F;
+    private static final float GLOW_INNER_WIDTH = 4.0F;
+
+    private static final float LINE_ALPHA = 1.0F;
     private static final float LINE_WIDTH = 2.0F;
 
     private static final Map<BlockPos, TargetBlock> HIGHLIGHTS =
@@ -41,7 +46,7 @@ public final class TargetHighlightRenderer {
                 TargetHighlightRenderer::tick
         );
 
-        LevelRenderEvents.BEFORE_GIZMOS.register(
+        LevelRenderEvents.AFTER_TRANSLUCENT_TERRAIN.register(
                 TargetHighlightRenderer::render
         );
     }
@@ -198,6 +203,107 @@ public final class TargetHighlightRenderer {
         double cameraZ =
                 cameraPos.z;
 
+        /*
+         * Outer glow
+         */
+        collector.submitCustomGeometry(
+                poseStack,
+                RayxRenderTypes.TARGET_BLOCK_GLOW,
+                (pose, vertexConsumer) -> {
+
+                    Matrix4f matrix =
+                            pose.pose();
+
+                    for (Map.Entry<BlockPos, TargetBlock> entry
+                            : HIGHLIGHTS.entrySet()) {
+
+                        BlockPos pos =
+                                entry.getKey();
+
+                        TargetBlock target =
+                                entry.getValue();
+
+                        float red =
+                                ((target.color() >> 16) & 0xFF)
+                                        / 255.0F;
+
+                        float green =
+                                ((target.color() >> 8) & 0xFF)
+                                        / 255.0F;
+
+                        float blue =
+                                (target.color() & 0xFF)
+                                        / 255.0F;
+
+                        drawOutline(
+                                matrix,
+                                vertexConsumer,
+                                pos,
+                                cameraX,
+                                cameraY,
+                                cameraZ,
+                                red,
+                                green,
+                                blue,
+                                GLOW_OUTER_ALPHA,
+                                GLOW_OUTER_WIDTH
+                        );
+                    }
+                }
+        );
+
+        /*
+         * Inner glow
+         */
+        collector.submitCustomGeometry(
+                poseStack,
+                RayxRenderTypes.TARGET_BLOCK_GLOW,
+                (pose, vertexConsumer) -> {
+
+                    Matrix4f matrix =
+                            pose.pose();
+
+                    for (Map.Entry<BlockPos, TargetBlock> entry
+                            : HIGHLIGHTS.entrySet()) {
+
+                        BlockPos pos =
+                                entry.getKey();
+
+                        TargetBlock target =
+                                entry.getValue();
+
+                        float red =
+                                ((target.color() >> 16) & 0xFF)
+                                        / 255.0F;
+
+                        float green =
+                                ((target.color() >> 8) & 0xFF)
+                                        / 255.0F;
+
+                        float blue =
+                                (target.color() & 0xFF)
+                                        / 255.0F;
+
+                        drawOutline(
+                                matrix,
+                                vertexConsumer,
+                                pos,
+                                cameraX,
+                                cameraY,
+                                cameraZ,
+                                red,
+                                green,
+                                blue,
+                                GLOW_INNER_ALPHA,
+                                GLOW_INNER_WIDTH
+                        );
+                    }
+                }
+        );
+
+        /*
+         * Sharp core outline
+         */
         collector.submitCustomGeometry(
                 poseStack,
                 RayxRenderTypes.TARGET_BLOCK_LINES,
@@ -236,7 +342,9 @@ public final class TargetHighlightRenderer {
                                 cameraZ,
                                 red,
                                 green,
-                                blue
+                                blue,
+                                LINE_ALPHA,
+                                LINE_WIDTH
                         );
                     }
                 }
@@ -252,7 +360,9 @@ public final class TargetHighlightRenderer {
             double cameraZ,
             float red,
             float green,
-            float blue
+            float blue,
+            float alpha,
+            float lineWidth
     ) {
 
         double minX =
@@ -295,7 +405,8 @@ public final class TargetHighlightRenderer {
                 buffer,
                 minX, minY, minZ,
                 maxX, minY, minZ,
-                red, green, blue
+                red, green, blue,
+                alpha, lineWidth
         );
 
         line(
@@ -303,7 +414,8 @@ public final class TargetHighlightRenderer {
                 buffer,
                 maxX, minY, minZ,
                 maxX, minY, maxZ,
-                red, green, blue
+                red, green, blue,
+                alpha, lineWidth
         );
 
         line(
@@ -311,7 +423,8 @@ public final class TargetHighlightRenderer {
                 buffer,
                 maxX, minY, maxZ,
                 minX, minY, maxZ,
-                red, green, blue
+                red, green, blue,
+                alpha, lineWidth
         );
 
         line(
@@ -319,7 +432,8 @@ public final class TargetHighlightRenderer {
                 buffer,
                 minX, minY, maxZ,
                 minX, minY, minZ,
-                red, green, blue
+                red, green, blue,
+                alpha, lineWidth
         );
 
         // Top
@@ -329,7 +443,8 @@ public final class TargetHighlightRenderer {
                 buffer,
                 minX, maxY, minZ,
                 maxX, maxY, minZ,
-                red, green, blue
+                red, green, blue,
+                alpha, lineWidth
         );
 
         line(
@@ -337,7 +452,8 @@ public final class TargetHighlightRenderer {
                 buffer,
                 maxX, maxY, minZ,
                 maxX, maxY, maxZ,
-                red, green, blue
+                red, green, blue,
+                alpha, lineWidth
         );
 
         line(
@@ -345,7 +461,8 @@ public final class TargetHighlightRenderer {
                 buffer,
                 maxX, maxY, maxZ,
                 minX, maxY, maxZ,
-                red, green, blue
+                red, green, blue,
+                alpha, lineWidth
         );
 
         line(
@@ -353,7 +470,8 @@ public final class TargetHighlightRenderer {
                 buffer,
                 minX, maxY, maxZ,
                 minX, maxY, minZ,
-                red, green, blue
+                red, green, blue,
+                alpha, lineWidth
         );
 
         // Vertical edges
@@ -363,7 +481,8 @@ public final class TargetHighlightRenderer {
                 buffer,
                 minX, minY, minZ,
                 minX, maxY, minZ,
-                red, green, blue
+                red, green, blue,
+                alpha, lineWidth
         );
 
         line(
@@ -371,7 +490,8 @@ public final class TargetHighlightRenderer {
                 buffer,
                 maxX, minY, minZ,
                 maxX, maxY, minZ,
-                red, green, blue
+                red, green, blue,
+                alpha, lineWidth
         );
 
         line(
@@ -379,7 +499,8 @@ public final class TargetHighlightRenderer {
                 buffer,
                 maxX, minY, maxZ,
                 maxX, maxY, maxZ,
-                red, green, blue
+                red, green, blue,
+                alpha, lineWidth
         );
 
         line(
@@ -387,7 +508,8 @@ public final class TargetHighlightRenderer {
                 buffer,
                 minX, minY, maxZ,
                 minX, maxY, maxZ,
-                red, green, blue
+                red, green, blue,
+                alpha, lineWidth
         );
     }
 
@@ -402,8 +524,13 @@ public final class TargetHighlightRenderer {
             double z2,
             float red,
             float green,
-            float blue
+            float blue,
+            float alpha,
+            float lineWidth
     ) {
+        float normalX = (float) (x2 - x1);
+        float normalY = (float) (y2 - y1);
+        float normalZ = (float) (z2 - z1);
 
         buffer
                 .addVertex(
@@ -416,15 +543,15 @@ public final class TargetHighlightRenderer {
                         red,
                         green,
                         blue,
-                        LINE_ALPHA
+                        alpha
                 )
                 .setNormal(
-                        0.0F,
-                        1.0F,
-                        0.0F
+                        normalX,
+                        normalY,
+                        normalZ
                 )
                 .setLineWidth(
-                        LINE_WIDTH
+                        lineWidth
                 );
 
         buffer
@@ -438,15 +565,15 @@ public final class TargetHighlightRenderer {
                         red,
                         green,
                         blue,
-                        LINE_ALPHA
+                        alpha
                 )
                 .setNormal(
-                        0.0F,
-                        1.0F,
-                        0.0F
+                        normalX,
+                        normalY,
+                        normalZ
                 )
                 .setLineWidth(
-                        LINE_WIDTH
+                        lineWidth
                 );
     }
 }
