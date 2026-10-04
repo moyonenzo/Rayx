@@ -8,16 +8,24 @@ import org.slf4j.LoggerFactory;
 public class Rayx implements ClientModInitializer {
 
 	public static final String MOD_ID = "rayx";
+
 	public static final Logger LOGGER =
 			LoggerFactory.getLogger(MOD_ID);
 
 	@Override
 	public void onInitializeClient() {
+		TargetBlocks.initialize();
+
 		Keybinds.initialize();
 		Hud.initialize();
+
+		TargetHighlightRenderer.initialize();
 	}
 
 	public static Identifier id(String path) {
-		return Identifier.fromNamespaceAndPath(MOD_ID, path);
+		return Identifier.fromNamespaceAndPath(
+				MOD_ID,
+				path
+		);
 	}
 }
