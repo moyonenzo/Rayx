@@ -53,6 +53,13 @@ public final class TargetHighlightRenderer {
 
     private static void tick(Minecraft client) {
 
+        if (!States.isEnabled()) {
+            HIGHLIGHTS.clear();
+            lastScanCenter = null;
+            ticksUntilRescan = 0;
+            return;
+        }
+
         if (client.level == null || client.player == null) {
             HIGHLIGHTS.clear();
             lastScanCenter = null;
@@ -78,6 +85,12 @@ public final class TargetHighlightRenderer {
     private static void rescan(Minecraft client) {
 
         HIGHLIGHTS.clear();
+
+        if (!States.isEnabled()) {
+            lastScanCenter = null;
+            ticksUntilRescan = 0;
+            return;
+        }
 
         Map<Block, TargetBlock> targetsByBlock =
                 TargetBlocks.getEnabledByBlock();
@@ -175,7 +188,8 @@ public final class TargetHighlightRenderer {
     private static void render(
             LevelRenderContext context
     ) {
-        if (HIGHLIGHTS.isEmpty()) {
+        if (!States.isEnabled()
+                || HIGHLIGHTS.isEmpty()) {
             return;
         }
 
